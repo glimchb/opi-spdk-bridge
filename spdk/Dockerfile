@@ -9,16 +9,16 @@ ARG TAG=v22.09
 ARG ARCH=x86-64-v2
 
 WORKDIR /root
-RUN dnf install -y git rpm-build diffutils procps-ng pip && dnf clean all
+RUN dnf install -y git rpm-build diffutils procps-ng pip hostname && dnf clean all
 
 # hadolint ignore=DL3003
 RUN git clone https://github.com/spdk/spdk --branch ${TAG} --depth 1 && \
     cd spdk && git submodule update --init --depth 1 && scripts/pkgdep.sh --rdma
 
 # hadolint ignore=DL3003
-RUN cd spdk && ./rpmbuild/rpm.sh --target-arch=${ARCH} --without-uring --with-crypto \
+RUN cd spdk && LDFLAGS=" " ./rpmbuild/rpm.sh --target-arch=${ARCH} --without-uring --with-crypto \
     --without-fio --with-raid5f --with-vhost --without-pmdk --without-rbd \
-    --with-rdma --with-shared --with-iscsi-initiator --without-vtune
+    --with-rdma --with-shared --with-iscsi-initiator --without-vtune --with-vfio-user
 
 FROM docker.io/library/fedora:37
 
